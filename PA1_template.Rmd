@@ -1,25 +1,133 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "Course Project 1"
+author: "Vamshidhar"
+date: "October 26, 2016"
+output: html_document
 ---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
+#My first markdown, Course project 1:  
+####Loading required pacakges:
+loading packages that are helpfull in our analysis.
+```{r}
+suppressMessages(library(data.table))
+suppressMessages(library(dplyr))
+suppressMessages(library(ggplot2))
+```
 
-## Loading and preprocessing the data
+## Loading and preprocessing the data:
+Lets start our analysis by downlaoding, uploading and discovering the data.
+```{r cacahe = TRUE}
+link <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+download.file(link, destfile = "data.zip")
+unzip("data.zip")
+amd <- fread("activity.csv", header = TRUE ,na.strings = "NA")
+amd <- tbl_df(amd)
+summary(amd)
+```
 
+## What is mean total number of steps per day?
+#### Caliculating total no of steps per each day:
+```{r }
+tot_stepsinday <- aggregate(steps ~ date, data = amd, sum, na.rm = TRUE)
+```
 
+####Ploting histogram: 
 
-## What is mean total number of steps taken per day?
+```{r }
+ggplot(data = tot_stepsinday, aes(x = tot_stepsinday$steps)) +
+        geom_histogram(aes(fill = ..count..), bins = 15) +
+        scale_fill_gradient("Count", low = "yellow", high = "blue") +
+        xlab( "Total no of steps per day") +
+        ggtitle("Histogram of total number of steps taken per day")
 
+```
 
+####Caliculating Mean and Median:
+
+```{r }
+Mean <- round(mean(tot_stepsinday$steps))
+Median <- median(tot_stepsinday$steps)
+```
+**Observation :** Mean and Median of the number of steps taken per day was caliculated in the above code, they are found to be Mean = `r sprintf("%.0f",Mean)` and Median = `r Median`
 
 ## What is the average daily activity pattern?
 
+```{r }
+avg_pattrn <- aggregate(steps ~ interval, data = amd, mean, na.rm = TRUE)
+d <- which(avg_pattrn$steps == max(avg_pattrn$steps))
+max <- avg_pattrn[d,1]
+ggplot(avg_pattrn, aes(x = interval, y = steps,label = 
+                               paste(avg_pattrn[d,1], "th interval",sep = ""))) +
+        geom_line() +
+        geom_text(data = avg_pattrn[d,],vjust=0, colour="red")
+```
 
+**Observation :**interval that contains the maximum number of steps is `r max`  
 
-## Imputing missing values
+## Imputing missing values:
+```{r }
+miss <- sum(!complete.cases(amd))
+```
+Total number of missing values in the dataset are `r miss`
 
+## Imputation of missing values:
+####Filling missing values with its *mean*
+* Strategy used to impute missing values here is simple by *mean*
+```{r }
+imputedamd <- amd
+imputedamd$steps[imputedamd$steps %in% NA] <- mean(imputedamd$steps, na.rm = TRUE)
+colSums(is.na(imputedamd))
+```
 
+```{r }
+tot_stepsinday_imputed <- aggregate(steps ~ date, data = amd, sum, na.rm = TRUE)
+ggplot(data = tot_stepsinday_imputed, aes(x = steps)) +
+        geom_histogram(aes(fill = ..count..), bins = 15) +
+        scale_fill_gradient("Count", low = "yellow", high = "blue")+
+        xlab( "Total no of steps per day") +
+        ggtitle("Histogram of total number of steps taken per day in imputed dataset")
+```
+
+**Observation :** There is no significant change in histograms before and after imputing missing valyes:
+
+```{r }
+imputed_Mean <- round(mean(tot_stepsinday_imputed$steps))
+imputed_Median <- median(tot_stepsinday_imputed$steps)
+```
+
+Parameter      |        Mean                    | Median
+-------------- | -----------------------------  | ------------------
+actual data    |`r sprintf("%.0f",Mean)       ` | `r Median`
+imputed data   |`r sprintf("%.0f",imputed_Mean)`|`r imputed_Median`
+
+**Observation :** As observed above, Mean and Median values does not change even after imputation of missing values.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+#### using imputed dataset here:
+```{r cache = TRUE}
+imputedamd$date <- as.Date(strptime(imputedamd$date, format="%Y-%m-%d"))
+imputedamd$day <- weekdays(imputedamd$date)
+for (i in 1:nrow(imputedamd)) {
+        if (imputedamd[i,]$day %in% c("Saturday","Sunday")) {
+                imputedamd[i,]$day<-"weekend"
+        }
+        else{
+                imputedamd[i,]$day<-"weekday"
+        }
+}
+stepsperday <- aggregate(imputedamd$steps ~ imputedamd$interval + imputedamd$day, imputedamd, mean)
+```
+
+####Ploting weekend vs weekday to compare weekend and weekday pattern
+
+```{r }
+names(stepsperday ) <- c("interval", "day", "steps")
+library(lattice)
+xyplot(steps ~ interval | day, stepsperday , type = "l", layout = c(1, 2), 
+       xlab = "Interval", ylab = "Number of steps")
+```
+
+#*********End of the project************
