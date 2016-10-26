@@ -126,7 +126,7 @@ ggplot(data = tot_stepsinday, aes(x = tot_stepsinday$steps)) +
         ggtitle("Histogram of total number of steps taken per day")
 ```
 
-![](PA1_template_files/figure-markdown_github/unnamed-chunk-4-1.png)
+![](figure/unnamed-chunk-4-1.png)
 
 #### Caliculating Mean and Median:
 
@@ -150,7 +150,7 @@ ggplot(avg_pattrn, aes(x = interval, y = steps,label =
         geom_text(data = avg_pattrn[d,],vjust=0, colour="red")
 ```
 
-![](PA1_template_files/figure-markdown_github/unnamed-chunk-6-1.png)
+![](figure/unnamed-chunk-6-1.png)
 
 **Observation :**interval that contains the maximum number of steps is 835
 
@@ -188,7 +188,7 @@ ggplot(data = tot_stepsinday_imputed, aes(x = steps)) +
         ggtitle("Histogram of total number of steps taken per day in imputed dataset")
 ```
 
-![](PA1_template_files/figure-markdown_github/unnamed-chunk-9-1.png)
+![](figure/unnamed-chunk-9-1.png)
 
 **Observation :** There is no significant change in histograms before and after imputing missing valyes:
 
@@ -232,7 +232,7 @@ xyplot(steps ~ interval | day, stepsperday , type = "l", layout = c(1, 2),
        xlab = "Interval", ylab = "Number of steps")
 ```
 
-![](PA1_template_files/figure-markdown_github/unnamed-chunk-12-1.png)
+![](figure/unnamed-chunk-12-1.png)
 
 \*\*\*\*\*\*\*\*\*End of the project\*\*\*\*\*\*\*\*\*\*\*\*
 ============================================================
